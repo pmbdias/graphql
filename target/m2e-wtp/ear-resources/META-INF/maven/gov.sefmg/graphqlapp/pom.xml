@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>gov.sefmg</groupId>
+	<artifactId>graphqlapp</artifactId>
+	<packaging>ear</packaging>
+	<name>Projeto protocolographql Aplicacao</name>
+	<version>1.0.0</version>
+
+	<properties>
+		<!-- Weblogic -->
+		<weblogic.mwhome>C:\Ambiente\as\Oracle\Middleware</weblogic.mwhome>
+		<weblogic.adminurl>t3://localhost:7001</weblogic.adminurl>
+		<weblogic.username>weblogic</weblogic.username>
+		<weblogic.password>welcome1</weblogic.password>
+		<weblogic.app-target>AdminServer</weblogic.app-target>
+		<weblogic.data-target>AdminServer</weblogic.data-target>
+		<weblogic.jdbc.version>12.2.1.3</weblogic.jdbc.version>
+		<coherence.version>12.2.1.3</coherence.version>
+		<toplink.version>12.2.1.3</toplink.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>gov.sefmg</groupId>
+			<artifactId>graphqlweb</artifactId>
+			<version>1.0.0</version>
+			<type>war</type>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>gov.sefmg</groupId>
+			<artifactId>graphqlejb</artifactId>
+	  		<version>1.0.0</version>
+			<type>ejb</type>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-ear-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+					<version>1.3</version>
+					<finalName>${artifactId}-${project.version}</finalName>
+					<defaultLibBundleDir>libs</defaultLibBundleDir>
+					<displayName>ProtocoloGraphql - ${project.version}</displayName>
+					<modules>
+						<webModule>
+							<groupId>gov.sefmg</groupId>
+							<artifactId>graphqlweb</artifactId>
+							<contextRoot>/protocolographql</contextRoot>
+						</webModule>
+					</modules>
+					<archive>
+						<manifestEntries>
+							<Specification-Title>${project.version}</Specification-Title>
+							<Specification-Version>${project.version}</Specification-Version>
+							<Implementation-Title>protocoloapp Implementation</Implementation-Title>
+							<Implementation-Version>${project.version}</Implementation-Version>
+							<Implementation-Vendor>Ora0cle</Implementation-Vendor>
+							<Extension-Name>graphqlapp</Extension-Name>
+							<WebLogic-Application-Version>${project.version}</WebLogic-Application-Version>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>com.oopsconsultancy</groupId>
+						<artifactId>xmltask</artifactId>
+						<version>1.16.1</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<configuration>
+							<tasks>
+								<echo>*******************ATENCAO**************************</echo>
+								<echo>* *</echo>
+								<echo>* MODO DESENVOLVIMENTO COM DEPLOY *</echo>
+								<echo>* PROJETOS EXPLODIDOS *</echo>
+								<echo>* *</echo>
+								<echo>****************************************************</echo>
+
+								<echo message="Alterando Descritores" />
+
+								<echo message="Definindo arquivo DTD local" />
+								<xmlcatalog id="dtds">
+									<dtd
+										publicId="-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"
+										location="application_1_3.dtd" />
+								</xmlcatalog>
+
+								<echo message="Definindo XmlTask" />
+								<taskdef name="xmltask"
+									classname="com.oopsconsultancy.xmltask.ant.XmlTask"
+									classpathref="maven.plugin.classpath" />
+
+								<echo message="Criando o arquivo application.xml" />
+								<xmltask
+									source="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/application.xml"
+									dest="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/application.xml"
+									preserveType="true">
+									<xmlcatalog refid="dtds" />
+									<insert path="//application">
+                                   <![CDATA[
+<library-directory>libs</library-directory>
+                              ]]>
+									</insert>
+								</xmltask>
+
+								<echo message="Criando o arquivo weblogic-application.xml" />
+								<xmltask
+									dest="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/weblogic-application.xml"
+									preserveType="true">
+									<insert path="/">
+								<![CDATA[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wls:weblogic-application xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-application" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/javaee_7.xsd http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.7/weblogic-application.xsd">
+<!--weblogic-version:12.2.1 -->
+
+	<wls:application-param>
+		<wls:param-name>webapp.encoding.default</wls:param-name>
+		<wls:param-value>UTF-8</wls:param-value>
+	</wls:application-param>
+    
+	<session-descriptor>
+		<sharing-enabled>true</sharing-enabled>
+	</session-descriptor>							
+</wls:weblogic-application>
+									]]>
+									</insert>
+								</xmltask>
+
+								<echo message="Copiando o diretorio META-INF" />
+								<copy todir="${project.basedir}/META-INF">
+									<fileset
+										dir="${project.build.directory}/${project.artifactId}-${project.version}/META-INF" />
+								</copy>
+
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Deleta o conteúdo dos diretórios "META-INF" e "libs" na raíz do 
+				projeto "app" -->
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.basedir}/lib</directory>
+						</fileset>
+						<fileset>
+							<directory>${project.basedir}/META-INF</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<!-- Realiza a cópia do diretório "libs" na raíz do projeto "app" ao 
+				realizar "clean install" -->
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/lib</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<!-- Ignora os artifactId configurados como "war" e "ejb" -->
+							<excludeTypes>war,ejb</excludeTypes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Realiza o deploy no Weblogic -->
+			<!-- <plugin>
+				<groupId>com.oracle.weblogic</groupId>
+				<artifactId>weblogic-maven-plugin</artifactId>
+				<version>12.1.3-0-0</version>
+				<executions>
+					<execution>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+						<configuration>
+							<adminurl>${weblogic.adminurl}</adminurl>
+							<user>${weblogic.username}</user>
+							<password>${weblogic.password}</password>
+							<middlewareHome>${weblogic.mwhome}</middlewareHome>
+							<source>${project.basedir}</source>
+							<targets>${weblogic.data-target}</targets>
+							<verbose>true</verbose>
+							<name>${project.artifactId}</name>
+							<remote>false</remote>
+							<upload>false</upload>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin> -->
+
+		</plugins>
+	</build>
+
+</project>

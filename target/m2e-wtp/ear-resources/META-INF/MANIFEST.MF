@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+WebLogic-Application-Version: 1.0.0
+Implementation-Title: protocoloapp Implementation
+Implementation-Version: 1.0.0
+Built-By: paula.dias
+Specification-Title: 1.0.0
+Extension-Name: graphqlapp
+Build-Jdk: 1.8.0_152
+Created-By: Maven Integration for Eclipse
+Specification-Version: 1.0.0
+Implementation-Vendor: Ora0cle
+
